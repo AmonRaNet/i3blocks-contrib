@@ -1,0 +1,52 @@
+#!/bin/bash
+set -e
+
+proc_info="$(cat /proc/cpuinfo | grep 'MHz')"
+proc_stat1="$(cat /proc/stat)"
+sleep 0.5
+proc_stat2="$(cat /proc/stat)"
+
+I=""
+O=()
+read_line() {
+    O=($(echo "$I" | sed "${1}q;d"))
+}
+
+status=""
+for ((i=1;i<=$(nproc);i++));do
+    I="$proc_stat1"
+    read_line $((1+$i))
+    A=( "${O[@]}" )
+    B=$((${A[1]} + ${A[2]} + ${A[3]} + ${A[4]}))
+
+    I="$proc_stat2"
+    read_line $((1+$i))
+    C=( "${O[@]}" )
+    D=$((${C[1]} + ${C[2]} + ${C[3]} + ${C[4]}))
+    L=$(((100 * (B - D - ${A[4]} + ${C[4]})) / (B - D)))
+
+    I="$proc_info"
+    read_line $i
+    F=( "${O[@]}" )
+    M=$(echo "${F[3]}" | awk -F"." '{ print $1 }')
+
+    COLOR="#66ff66" #green
+    if (($L > 33)); then
+        COLOR="#ffff00" #yellow
+    fi
+    if (($L > 66)); then
+        COLOR="#ff3300" #red
+    fi
+    if (($L > 99)); then
+        L=99
+    fi
+
+    current="<span foreground=\"$COLOR\">CPU $(printf "%3.2d%%(%4s Mhz)" $L $M)</span>"
+    if [ "$status" != "" ]; then
+        status="$status $current"
+    else
+        status="$current"
+    fi
+done
+
+echo "$status"
