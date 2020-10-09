@@ -102,5 +102,12 @@ else:
 
 print(fulltext)
 print(fulltext)
-if percentleft < 10:
+
+low_trigger = 10
+if os.getenv('LOW_TRIGGER') is not None:
+    low_trigger = int(os.getenv('LOW_TRIGGER'))
+
+if state == "Discharging" and percentleft < low_trigger:
+    if os.getenv('LOW_NOTIFY') is not None:
+        os.system(os.getenv('LOW_NOTIFY'))
     exit(33)

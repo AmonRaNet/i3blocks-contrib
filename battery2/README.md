@@ -26,3 +26,11 @@ command=$SCRIPT_DIR/battery2
 markup=pango
 interval=30
 ```
+
+Optionally notification command can be executed when battery level dropped below threshold:
+
+```INI
+[battery2]
+LOW_NOTIFY=notify-send --icon=battery -u critical Battery "Too low battery!"
+LOW_TRIGGER=10
+```
